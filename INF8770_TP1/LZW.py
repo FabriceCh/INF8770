@@ -1,30 +1,23 @@
 import math
 import imageio
 
-def lzw(filename):
-    message = ""
-    if (filename[:3] == "bmp"):
-        message = imageio.imread(filename)
-    else:
-        with open(filename) as f:
-            message = f.read().strip()
-
+def lzw(data):
+    
     #dictionnaire contenant les symboles et leur representation
     dict = {}
-    distinctSymbols = list(set(message))
+    distinctSymbols = list(set(data))
     bitsNeeded = findNumberOfBits(len(distinctSymbols))
 
     #remplissage du dictionnaire de depart
     for idx, symbol in enumerate(distinctSymbols):
         dict[symbol] = format(idx, '0'+str(bitsNeeded)+'b')
-    print(dict)
 
-    i=0
+    i = 0
     substr = ""
     encoded_message = ""
     encodage = ""
-    while i < len(message):
-        substr += message[i]
+    while i < len(data):
+        substr += str(data[i])
         subcode = dict.get(substr)
         if subcode is None:
             encoded_message += encodage
@@ -36,20 +29,13 @@ def lzw(filename):
             i -= 1
         else:
             encodage = subcode
-            if i == len(message)-1:
+            if i == len(data)-1:
                 encoded_message += encodage
 
         i += 1
-
-    print(dict)
-
     return encoded_message
 
 #Fonction calculant le nombre de bits neessaire pour le dictionnaire de depart
 def findNumberOfBits(nSymbols):
 
     return math.ceil(math.log2(nSymbols))
-
-
-print(findNumberOfBits(5))
-print(lzw("input.txt"))

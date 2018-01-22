@@ -2,12 +2,10 @@
 from itertools import groupby
 from Node import Node
 from heapq import *
-def huffman(filename):
 
-    message = ""
-    with open(filename) as f:
-        message = f.read().strip()
-    items = [Node(symb, len(list(group))) for symb, group in groupby(sorted(list(message)))]
+def huffman(data):
+
+    items = [Node(str(symb), len(list(group))) for symb, group in groupby(sorted(list(data)))]
     heapify(items)
     while len(items) > 1:
         left = heappop(items)
@@ -31,11 +29,8 @@ def huffman(filename):
     encode("", items[0])
 
     encoded_message = ""
-    for symbol in message:
-        encoded_message = encoded_message + codes[symbol]
-    print(codes)
+    for symbol in data:
+        encoded_message = encoded_message + codes[str(symbol)]
+
     return encoded_message
-
-print(huffman("input.txt"))
-
 
