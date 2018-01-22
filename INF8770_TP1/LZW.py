@@ -1,16 +1,20 @@
 import math
-
+import imageio
 
 def lzw(filename):
-
     message = ""
-    with open(filename) as f:
-        message = f.read().strip()
+    if (filename[:3] == "bmp"):
+        message = imageio.imread(filename)
+    else:
+        with open(filename) as f:
+            message = f.read().strip()
+
     #dictionnaire contenant les symboles et leur representation
     dict = {}
     distinctSymbols = list(set(message))
     bitsNeeded = findNumberOfBits(len(distinctSymbols))
-    #Remplissage du dictionnaire de depart
+
+    #remplissage du dictionnaire de depart
     for idx, symbol in enumerate(distinctSymbols):
         dict[symbol] = format(idx, '0'+str(bitsNeeded)+'b')
     print(dict)
@@ -27,7 +31,7 @@ def lzw(filename):
             size = len(dict)
             dict[substr] = format(size, '0'+str(findNumberOfBits(size+1))+'b')
             for key in dict.keys():
-                dict[key] = format(int(dict[key],2), '0'+str(findNumberOfBits(len(dict)))+'b')
+                dict[key] = format(int(dict[key], 2), '0'+str(findNumberOfBits(len(dict)))+'b')
             substr = ""
             i -= 1
         else:
