@@ -20,7 +20,9 @@ def main(argv):
         choix = input("Voulez-vous encoder le fichier par triplets RGB (24 bits)? [O/N]")
 
     data = []
+    entry_size = 8
     if choix.upper() == "O":
+        entry_size = 24
         for i in range(0, int(len(contents)/3)):
             data.append(int(contents[i] << 16) + int(contents[i+1] << 8) + int(contents[i+2]))
     else:
@@ -30,18 +32,23 @@ def main(argv):
         print("Calcul de Huffman...")
         res = huffman(data)
         print("Écriture du résultat de Huffman dans le fichier huffman.txt...")
-        f.write("Huffman:\n" + res + "\n")
-        l = len(res)
-        print("Longueur de l'encodage : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
+        f.write("Huffman:\n" + res[0] + "\n")
+        f.write("Dictionnaire:\n" + str(res[1]) + "\n")
+        l = len(res[0])
+        for key, value in res[1].items():
+            l += entry_size + len(value)
+        print("Longueur de l'encodage (comprenant le dictionnaire) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
 
     with open("lzw.txt", 'w') as f:
         print("Calcul de LZW...")
         res = lzw(data)
         print("Écriture du résultat de LZW dans le fichier lzw.txt...")
-        f.write("LZW:\n" + res + "\n")
-        l = len(res)
-        print("Longueur de l'encodage : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
-    
+        f.write("LZW:\n" + res[0] + "\n")
+        f.write("Dictionnaire initial:\n" + str(res[1]) + "\n")
+        l = len(res[0])
+        for key, value in res[1].items():
+            l += entry_size + len(value)
+        print("Longueur de l'encodage (comprenant le dict initial) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
 
 if __name__ == "__main__":
     main(sys.argv[1])

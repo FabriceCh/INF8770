@@ -12,6 +12,8 @@ def lzw(data):
     for idx, symbol in enumerate(distinctSymbols):
         dict[symbol] = format(idx, '0'+str(bitsNeeded)+'b')
 
+    dict_init = dict.copy()
+
     i = 0
     substr = ""
     encoded_message = ""
@@ -33,7 +35,7 @@ def lzw(data):
                 encoded_message += encodage
 
         i += 1
-    return encoded_message
+    return (encoded_message, dict_init)
 
 #Fonction calculant le nombre de bits neessaire pour le dictionnaire de depart
 def findNumberOfBits(nSymbols):

@@ -7,6 +7,7 @@ def huffman(data):
 
     items = [Node(str(symb), len(list(group))) for symb, group in groupby(sorted(list(data)))]
     heapify(items)
+    heap_to_print = items
     while len(items) > 1:
         left = heappop(items)
         right = heappop(items)
@@ -32,5 +33,5 @@ def huffman(data):
     for symbol in data:
         encoded_message = encoded_message + codes[str(symbol)]
 
-    return encoded_message
+    return (encoded_message, codes)
 
