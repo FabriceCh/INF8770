@@ -17,10 +17,12 @@ def test_random_string(string_size, gen_template):
     time_lzw = end_lzw - start_lzw
 
     len_huf = len(encoded_Huffman[0])
+    #plus size in dict
     for key, value in encoded_Huffman[1].items():
         len_huf += 8 + len(value)
 
     len_lzw = len(encoded_LZW[0])
+    #plus size in dict
     for key, value in encoded_LZW[1].items():
         len_lzw += 8 + len(value)
 
@@ -85,7 +87,7 @@ def test_random_string(string_size, gen_template):
 #clear log files
 file = open("Stats_from_random_string_generation.log", "w")
 file.close()
-file = open("Full_verbose_results_from_random_string_generation.txt", "a")
+file = open("Full_verbose_results_from_random_string_generation.log", "a")
 file.close()
 
 #tests
@@ -118,6 +120,6 @@ for i in range(2, 5):
 for i in range(2, 5):
     test_random_string(10 ** i, "[A-Aa-z0-9]")
 
-
+print("Résultats ajoutés dans les fichiers ")
 
 
