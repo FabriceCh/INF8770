@@ -1,0 +1,21 @@
+------------------------------------
+total number of symbols: 10000, symbol types: [A-B]
+
+initial string size: 80000 bits
+encoded using huffman size: 10018 bits time: 0.00401 seconds compression ratio: 7.98562
+encoded using lzw     size: 12348 bits time: 1.4810285568237305 seconds compression ratio: 6.47878
+------------------------------------
+------------------------------------
+total number of symbols: 1000, symbol types: [A-C]
+
+initial string size: 8000 bits
+encoded using huffman size: 1675 bits time: 0.00100 seconds compression ratio: 4.77611
+encoded using lzw     size: 2020 bits time: 0.07319498062133789 seconds compression ratio: 3.96039
+------------------------------------
+------------------------------------
+total number of symbols: 1000, symbol types: [A-D]
+
+initial string size: 8000 bits
+encoded using huffman size: 2040 bits time: 0.00100 seconds compression ratio: 3.92156
+encoded using lzw     size: 2541 bits time: 0.11032962799072266 seconds compression ratio: 3.14836
+------------------------------------
