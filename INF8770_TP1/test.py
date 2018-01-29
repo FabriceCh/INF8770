@@ -26,7 +26,7 @@ def test_random_string(string_size, gen_template):
 
 
     #log full verbose
-    file = open("Full_verbose_results_from_random_string_generation.txt", "a")
+    file = open("Full_verbose_results_from_random_string_generation.log", "a")
 
     file.writelines("------------------------------------" + "\n")
     file.writelines("TEST RANDOM STRING " + "\n")
@@ -55,7 +55,7 @@ def test_random_string(string_size, gen_template):
     file.close()
 
     #log general stats
-    file = open("Stats_from_random_string_generation.txt", "a")
+    file = open("Stats_from_random_string_generation.log", "a")
 
     file.writelines("------------------------------------" + "\n")
     file.writelines("total number of symbols: " + str(string_size) + ", symbol types: " + gen_template + "\n" + "\n")
@@ -67,7 +67,7 @@ def test_random_string(string_size, gen_template):
         + " bits time: "
         + str(time_huf)[0:7]
         + " seconds "
-        + "compression ratio: " + str((8 * string_size) / len_huf)[0:7]
+        + "taux de compression: " + str(1-(len_huf / (8 * string_size)))[0:7]
         + "\n"
     )
     file.writelines(
@@ -76,14 +76,14 @@ def test_random_string(string_size, gen_template):
         + " bits time: "
         + str(time_lzw)  # [0:7]
         + " seconds "
-        + "compression ratio: " + str((8 * string_size) / len_lzw)[0:7]
+        + "taux de compression: " + str(1-(len_lzw / (8 * string_size)))[0:7]
         + "\n"
     )
     file.writelines("------------------------------------" + "\n")
     file.close()
 
-#clear log txt files
-file = open("Stats_from_random_string_generation.txt", "w")
+#clear log files
+file = open("Stats_from_random_string_generation.log", "w")
 file.close()
 file = open("Full_verbose_results_from_random_string_generation.txt", "a")
 file.close()
@@ -91,36 +91,33 @@ file.close()
 #tests
 
 #1 symbol, string size varies from 100 to 1000
-for i in range(2, 3):
+for i in range(2, 4):
     test_random_string(10 ** i, "[A-A]")
 
 #2 symbols, string size varies from 100 to 10000
-for i in range(2, 4):
+for i in range(2, 5):
     test_random_string(10 ** i, "[A-B]")
 
 #3 symbols, string size varies from 100 to 10000
-for i in range(2, 4):
+for i in range(2, 5):
     test_random_string(10 ** i, "[A-C]")
 
 #5 symbols, string size varies from 100 to 10000
-for i in range(2, 4):
+for i in range(2, 5):
     test_random_string(10 ** i, "[A-E]")
 
 #10 symbols, string size varies from 100 to 10000
-for i in range(2, 4):
+for i in range(2, 5):
     test_random_string(10 ** i, "[A-J]")
 
 #26 symbols, string size varies from 100 to 10000
-for i in range(2, 4):
+for i in range(2, 5):
     test_random_string(10 ** i, "[A-Z]")
 
-#whole ascii set, string size varies from 100 to 10000
-for i in range(2, 4):
-    test_random_string(10 ** i, "[A-A]")
+#62 symbols, string size varies from 100 to 10000
+for i in range(2, 5):
+    test_random_string(10 ** i, "[A-Aa-z0-9]")
 
-test_random_string(10000, "[A-B]")
-test_random_string(1000, "[A-C]")
-test_random_string(1000, "[A-D]")
 
 
 
