@@ -7,7 +7,6 @@ def huffman(data):
 
     items = [Node(str(symb), len(list(group))) for symb, group in groupby(sorted(list(data)))]
     heapify(items)
-    heap_to_print = items
     while len(items) > 1:
         left = heappop(items)
         right = heappop(items)
