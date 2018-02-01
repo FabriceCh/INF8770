@@ -5,7 +5,6 @@ import imageio
 
 def main(argv):
     filename = argv.strip()
-    #extension = filename.split(".")[1]
     contents = []
     try:
         contents = imageio.imread(filename).flatten().tolist()
@@ -51,5 +50,7 @@ def main(argv):
         print("Longueur de l'encodage (comprenant le dict initial) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
 
 if __name__ == "__main__":
-    main(sys.argv[1])
-
+    try:
+        main(sys.argv[1])
+    except IndexError:
+        print("Entrez un fichier comme argument pour le script.\nUsage: encoder.py fichier.abc")

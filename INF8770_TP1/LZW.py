@@ -25,8 +25,10 @@ def lzw(data):
             encoded_message += encodage
             size = len(dict)
             dict[substr] = format(size, '0'+str(findNumberOfBits(size+1))+'b')
-            for key in dict.keys():
-                dict[key] = format(int(dict[key], 2), '0'+str(findNumberOfBits(len(dict)))+'b')
+
+            if findNumberOfBits(size+1) > findNumberOfBits(size):
+                for key in dict.keys():
+                    dict[key] = format(int(dict[key], 2), '0'+str(findNumberOfBits(len(dict)))+'b')
             substr = ""
             i -= 1
         else:
@@ -39,5 +41,4 @@ def lzw(data):
 
 #Fonction calculant le nombre de bits neessaire pour le dictionnaire de depart
 def findNumberOfBits(nSymbols):
-
     return math.ceil(math.log2(nSymbols))
