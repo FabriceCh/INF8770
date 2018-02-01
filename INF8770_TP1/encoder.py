@@ -2,6 +2,7 @@ import sys
 from Huffman import huffman
 from LZW import lzw
 import imageio
+import time
 
 def main(argv):
     filename = argv.strip()
@@ -29,7 +30,12 @@ def main(argv):
 
     with open("huffman.txt", 'w') as f:
         print("Calcul de Huffman...")
+
+        start_huf = time.time()
         res = huffman(data)
+        end_huf = time.time()
+        time_huf = end_huf - start_huf
+        print("Calcul de Huffman complété. Temps pris: " + str(time_huf) + " s")
         print("Écriture du résultat de Huffman dans le fichier huffman.txt...")
         f.write("Huffman:\n" + res[0] + "\n")
         f.write("Dictionnaire:\n" + str(res[1]) + "\n")
@@ -41,7 +47,11 @@ def main(argv):
 
     with open("lzw.txt", 'w') as f:
         print("Calcul de LZW...")
+        start_lzw = time.time()
         res = lzw(data)
+        end_lzw = time.time()
+        time_lzw = end_lzw - start_lzw
+        print("Calcul de LZW complété. Temps pris: " + str(time_lzw) + " s")
         print("Écriture du résultat de LZW dans le fichier lzw.txt...")
         f.write("LZW:\n" + res[0] + "\n")
         f.write("Dictionnaire initial:\n" + str(res[1]) + "\n")

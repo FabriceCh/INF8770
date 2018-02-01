@@ -4,7 +4,7 @@ from LZW import lzw
 import time
 
 def test_random_string(string_size, gen_template):
-    print("running tests for string " + str(string_size) + " " + str(gen_template))
+    print("Exécution de tests pour la string " + str(string_size) + " " + str(gen_template))
     string_to_encode = StringGenerator(gen_template+"{"+str(string_size)+"}").render()
     start_huf = time.time()
     encoded_Huffman = huffman(string_to_encode)
@@ -92,8 +92,8 @@ file.close()
 
 #tests
 
-#1 symbol, string size varies from 100 to 1000
-for i in range(2, 4):
+#1 symbol, string size varies from 100 to 10000
+for i in range(2, 5):
     test_random_string(10 ** i, "[A-A]")
 
 #2 symbols, string size varies from 100 to 10000
@@ -117,7 +117,7 @@ for i in range(2, 5):
     test_random_string(10 ** i, "[A-Z]")
 
 #62 symbols, string size varies from 100 to 10000
-for i in range(2, 5):
+for i in range(2, 7):
     test_random_string(10 ** i, "[A-Aa-z0-9]")
 
 print("Résultats ajoutés dans les fichiers ")
