@@ -2,6 +2,7 @@ from strgen import StringGenerator
 from Huffman import huffman
 from LZW import lzw
 import time
+import csv
 
 def test_random_string(string_size, gen_template):
     print("Exécution de tests pour la string " + str(string_size) + " " + str(gen_template))
@@ -67,7 +68,7 @@ def test_random_string(string_size, gen_template):
         "encoded using huffman size: "
         + str(len_huf)
         + " bits time: "
-        + str(time_huf)[0:7]
+        + str(time_huf)#[0:7]
         + " seconds "
         + "taux de compression: " + str(1-(len_huf / (8 * string_size)))[0:7]
         + "\n"
@@ -83,6 +84,10 @@ def test_random_string(string_size, gen_template):
     )
     file.writelines("------------------------------------" + "\n")
     file.close()
+    return ()
+
+
+
 
 #clear log files
 file = open("Stats_from_random_string_generation.log", "w")
@@ -120,6 +125,12 @@ for i in range(2, 5):
 for i in range(2, 7):
     test_random_string(10 ** i, "[A-Aa-z0-9]")
 
+   # with open("results.csv") as csvfile:
+    #    dataWriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+
 print("Résultats ajoutés dans les fichiers ")
+
+
 
 
