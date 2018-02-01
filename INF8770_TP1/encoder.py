@@ -34,6 +34,7 @@ def main(argv):
         f.write("Huffman:\n" + res[0] + "\n")
         f.write("Dictionnaire:\n" + str(res[1]) + "\n")
         l = len(res[0])
+        print("Longueur de l'encodage (sans le dictionnaire) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
         for key, value in res[1].items():
             l += entry_size + len(value)
         print("Longueur de l'encodage (comprenant le dictionnaire) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
@@ -45,6 +46,7 @@ def main(argv):
         f.write("LZW:\n" + res[0] + "\n")
         f.write("Dictionnaire initial:\n" + str(res[1]) + "\n")
         l = len(res[0])
+        print("Longueur de l'encodage (sans le dict initial) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
         for key, value in res[1].items():
             l += entry_size + len(value)
         print("Longueur de l'encodage (comprenant le dict initial) : " + str(l) + " bits ("+ str(int(l/8)) + " octets).")
