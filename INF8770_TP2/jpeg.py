@@ -46,7 +46,7 @@ def main(argv):
                    [99, 99, 99, 99, 99, 99, 99, 99],
                    [99, 99, 99, 99, 99, 99, 99, 99]])
 
-    QF = 2
+    QF = 99.9
     if QF < 50 and QF > 1:
         scale = np.floor(5000 / QF)
     elif QF < 100:
@@ -56,6 +56,16 @@ def main(argv):
         exit(1)
     scale = scale / 100.0
     Q = [QY * scale, QC * scale, QC * scale]
+
+    zigzag_indexes = [0, 1, 5, 6, 14, 15, 27, 28,
+                      2, 4, 7, 13, 16, 26, 29, 42,
+                      3, 8, 12, 17, 25, 30, 41, 43,
+                      9, 11, 18, 24, 31, 40, 44, 53,
+                      10, 19, 23, 32, 39, 45, 52, 54,
+                      20, 22, 33, 38, 46, 51, 55, 60,
+                      21, 34, 37, 47, 50, 56, 59, 61,
+                      35, 36, 48, 49, 57, 58, 62, 63]
+
     TransAllQuant = []
     for idx, channel in enumerate(imSub):
         channelrows = channel.shape[0]
@@ -69,6 +79,10 @@ def main(argv):
         for row in range(blocksV):
             for col in range(blocksH):
                 currentblock = cv2.dct(vis0[row * B:(row + 1) * B, col * B:(col + 1) * B])
+                to_zig = np.round(currentblock / Q[idx]).flatten()
+                zigged = np.zeros(64)
+                for i, zig in enumerate(zigzag_indexes):
+                    zigged[zig] = to_zig[i]
                 TransQuant[row * B:(row + 1) * B, col * B:(col + 1) * B] = np.round(currentblock / Q[idx])
         TransAllQuant.append(TransQuant)
 
@@ -95,16 +109,9 @@ def main(argv):
     plt.imshow(reImg)
     plt.show()
 
-    # https://rosettacode.org/wiki/Zig-zag_matrix#Python
-    zigzag_indexes = [0, 1, 5, 6, 14, 15, 27, 28,
-                      2, 4, 7, 13, 16, 26, 29, 42,
-                      3, 8, 12, 17, 25, 30, 41, 43,
-                      9, 11, 18, 24, 31, 40, 44, 53,
-                      10, 19, 23, 32, 39, 45, 52, 54,
-                      20, 22, 33, 38, 46, 51, 55, 60,
-                      21, 34, 37, 47, 50, 56, 59, 61,
-                      35, 36, 48, 49, 57, 58, 62, 63]
+
+
+
 
 if __name__ == "__main__":
-    printzz(zigzag(8))
-    #main(sys.argv[1])
+    main(sys.argv[1])
