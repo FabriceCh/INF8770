@@ -84,8 +84,8 @@ def main(argv):
                    [99, 99, 99, 99, 99, 99, 99, 99],
                    [99, 99, 99, 99, 99, 99, 99, 99],
                    [99, 99, 99, 99, 99, 99, 99, 99]])
-
-    QF = 1.00000001
+    factorIndicatorStr = "20"
+    QF = 20
     if 50 > QF > 1:
         scale = np.floor(5000 / QF)
     elif QF < 100:
@@ -203,8 +203,11 @@ def main(argv):
         DecAll[:, :, idx] = np.round(back1)
 
     reImg = cv2.cvtColor(DecAll, cv2.COLOR_YCrCb2RGB)
-    plt.imshow(reImg)
-    plt.show()
+    #plt.imshow(reImg)
+    #plt.show()
+    reImg = cv2.cvtColor(reImg, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(filename + factorIndicatorStr + ".png", reImg);
+
 
 
 if __name__ == "__main__":
