@@ -20,20 +20,37 @@ def main():
     print("Video resolution: %d x %d" % (width, height))
 
     last_hist = []
-    diff = []
     thresh_exceed = []
-    cnt = 0
+    colour_diff = []
+    last_edges = []
+    edges_diff = []
+    frame = 0
+
+    # Kernel defines how thick the dilation is. e.g. (2,2), (4,4)
+    kernel = np.ones((2,2),np.uint8)
+
     while True:
         (rv, im) = video.read()
         if not rv:
             break
-        cnt += 1
-        if len(last_hist) == 0:
+        frame += 1
+        if len(last_hist) == 0 :
+            # First frame
             last_bhist, _ = np.histogram(im[:, :, 0].flatten(), 16, (0, 255))
             last_ghist, _ = np.histogram(im[:, :, 1].flatten(), 16, (0, 255))
             last_rhist, _ = np.histogram(im[:, :, 2].flatten(), 16, (0, 255))
             last_hist = np.concatenate((last_bhist, last_ghist, last_rhist))
+
+            im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+            # Canny is the edge detection thing
+            # I have no idea what the other arguments are but it seems to work
+            # TODO: Figure out what the arguments are
+            edges = cv2.Canny(im_gray, 100, 200)
+            # Make edges thicc
+            dilated = cv2.dilate(edges, kernel, iterations=1)
+            last_edges_img = dilated
         else:
+            # COLOUR DIFF
             bhist, _ = np.histogram(im[:, :, 0].flatten(), 16, (0, 255))
             ghist, _ = np.histogram(im[:, :, 1].flatten(), 16, (0, 255))
             rhist, _ = np.histogram(im[:, :, 2].flatten(), 16, (0, 255))
@@ -44,12 +61,48 @@ def main():
             else:
                 thresh_exceed.append(None)
 
-            diff.append(difference)
+            colour_diff.append(difference)
             last_hist = hist
 
-    plt.plot(diff, 'b-', thresh_exceed, 'rx')
+            # EDGES DIFF
+            im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(im_gray, 100, 200)
+            dilated = cv2.dilate(edges, kernel, iterations=1)
+
+            # Add one to all values in the previous image because we
+            # don't want to get negative values in the difference image.
+            one = np.ones((last_edges_img.shape[0],last_edges_img.shape[1]),np.uint8)
+
+            # Divide the images by 255 so that white is represented by 1
+            edges_diff_img = (last_edges_img/255) + one - dilated/255
+
+            edges_diff_values, _ = np.histogram(edges_diff_img.flatten(), 3, (0, 2))
+
+            # Add the number of 0s and 2s because those are the pixels
+            # that were different
+            sum_differences = edges_diff_values[0] + edges_diff_values[2]
+            edges_diff.append(sum_differences)
+
+            # Use the code below to print a certain frame in the vid
+            if frame == 228:
+                plt.subplot(2,3,1),plt.imshow(last_edges,cmap = 'gray')
+                plt.title('Last_edges'), plt.xticks([]), plt.yticks([])
+                plt.subplot(2,3,2),plt.imshow(dilated,cmap = 'gray')
+                plt.title('Current_edges'), plt.xticks([]), plt.yticks([])
+                plt.subplot(2,3,3),plt.imshow(last_edges - dilated, cmap = 'gray')
+                plt.title('Difference'), plt.xticks([]), plt.yticks([])
+
+            last_edges = dilated
+
+    plt.subplot(2,3,4), plt.plot(edges_diff)
     plt.xlabel('Frame number')
-    plt.ylabel('Difference')
+    plt.ylabel('Edge Differences')
+    plt.subplot(2,3,5), plt.plot(np.gradient(edges_diff))
+    plt.xlabel('Frame number')
+    plt.ylabel('Edge Diff Derivative')
+    plt.subplot(2,3,6), plt.plot(colour_diff, 'b-', thresh_exceed, 'rx')
+    plt.xlabel('Frame number')
+    plt.ylabel('Colour Difference')
     plt.show()
 
     frame_count = video.get(cv2.CAP_PROP_POS_FRAMES)
