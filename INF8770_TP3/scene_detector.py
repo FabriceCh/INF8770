@@ -123,14 +123,15 @@ def main():
                         + str(end_change_frame))
 
     edges_diff_derivative = np.gradient(edges_diff)
+    is_scene_change = False
     # Edge changes - Detect the scene changes
+    print('EDGE CHANGE')
     for idx, diff in enumerate(edges_diff_derivative, start=1):
         if idx == 1:
             # The start of the video will produce a spike on the graph
             # because the histogram is initialized with black
             continue
 
-        is_scene_change = False
         is_scene_change_start = abs(diff) > GRADIENT_SCENE_CHANGE_THRESHOLD \
                                     and not is_scene_change
         is_scene_change_end = abs(diff) < GRADIENT_SCENE_CHANGE_THRESHOLD \
@@ -138,10 +139,18 @@ def main():
 
         if is_scene_change_start:
             is_scene_change = True
-        if is_scene_change:
-            print('EDGE: ' + str(idx) + ' ' + str(diff))
+            start_change_frame = idx
         if is_scene_change_end:
             is_scene_change = False
+            end_change_frame = idx
+
+            scene_change_length = end_change_frame - start_change_frame
+            # TODO: Check if the scene change length being 3 makes sense
+            if scene_change_length <= 3:
+                print('CUT: ' + str(start_change_frame))
+            else:
+                print('FADE: ' + str(start_change_frame) + ' to '
+                      + str(end_change_frame))
 
     plt.subplot(2,3,4), plt.plot(edges_diff)
     plt.xlabel('Frame number')
