@@ -98,14 +98,14 @@ def main():
 
             last_edges = dilated
 
-    edges_diff_derivative = np.gradient(edges_diff)
-
+    # Detect the scene changes
     is_scene_change = False
     start_change_frame = 0
     end_change_frame = 0
     previous_sign = 0
-    # Colour changes - Detect the scene changes
-    print('COLOUR')
+
+    edges_diff_derivative = np.gradient(edges_diff)
+
     for idx, diff in enumerate(colour_diff, start=1):
         is_scene_change_start = (abs(diff) > COLOUR_SCENE_CHANGE_THRESHOLD) \
                                     and (not is_scene_change)
@@ -134,36 +134,6 @@ def main():
             else:
                 print('FADE: ' + str(start_change_frame) + ' to '
                         + str(end_change_frame))
-
-    edges_diff_derivative = np.gradient(edges_diff)
-    is_scene_change = False
-    # Edge changes - Detect the scene changes
-    print('EDGE CHANGE')
-    for idx, diff in enumerate(edges_diff_derivative, start=1):
-        if idx == 1:
-            # The start of the video will produce a spike on the graph
-            # because the histogram is initialized with black
-            continue
-
-        is_scene_change_start = abs(diff) > GRADIENT_SCENE_CHANGE_THRESHOLD \
-                                    and not is_scene_change
-        is_scene_change_end = abs(diff) < GRADIENT_SCENE_CHANGE_THRESHOLD \
-                                and is_scene_change
-
-        if is_scene_change_start:
-            is_scene_change = True
-            start_change_frame = idx
-        if is_scene_change_end:
-            is_scene_change = False
-            end_change_frame = idx
-
-            scene_change_length = end_change_frame - start_change_frame
-            # TODO: Check if the scene change length being 3 makes sense
-            if scene_change_length <= 3:
-                print('CUT: ' + str(start_change_frame))
-            else:
-                print('FADE: ' + str(start_change_frame) + ' to '
-                      + str(end_change_frame))
 
     plt.subplot(2,3,4), plt.plot(edges_diff)
     plt.xlabel('Frame number')
