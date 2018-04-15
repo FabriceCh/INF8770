@@ -2,9 +2,12 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+COLOUR_DIFF_THRESHOLD = 8000
+GRADIENT_SCENE_CHANGE_THRESHOLD = 1050
+COLOUR_SCENE_CHANGE_THRESHOLD = 8000
+
 # Inspiration : https://bcastell.com/posts/scene-detection-tutorial-part-1/
 def main():
-    THRESHOLD = 8000
 
     video = cv2.VideoCapture("Toots.avi")
 
@@ -29,6 +32,7 @@ def main():
     # Kernel defines how thick the dilation is. e.g. (2,2), (4,4)
     kernel = np.ones((2,2),np.uint8)
 
+    # Calculate the histograms
     while True:
         (rv, im) = video.read()
         if not rv:
@@ -56,7 +60,7 @@ def main():
             rhist, _ = np.histogram(im[:, :, 2].flatten(), 16, (0, 255))
             hist = np.concatenate((bhist, ghist, rhist))
             difference = np.linalg.norm(last_hist - hist)
-            if difference > THRESHOLD:
+            if difference > COLOUR_DIFF_THRESHOLD:
                 thresh_exceed.append(difference)
             else:
                 thresh_exceed.append(None)
@@ -94,10 +98,55 @@ def main():
 
             last_edges = dilated
 
+    # Colour changes - Detect the scene changes
+    is_scene_change = False
+    start_change_frame = 0
+    end_change_frame = 0
+    for idx, diff in enumerate(colour_diff, start=1):
+        is_scene_change_start = (abs(diff) > COLOUR_SCENE_CHANGE_THRESHOLD) \
+                                    and (not is_scene_change)
+        is_scene_change_end = (abs(diff) < COLOUR_SCENE_CHANGE_THRESHOLD) \
+                                and is_scene_change
+
+        if is_scene_change_start:
+            is_scene_change = True
+            start_change_frame = idx
+        if is_scene_change_end:
+            is_scene_change = False
+            end_change_frame = idx
+
+            scene_change_length = end_change_frame - start_change_frame
+            if scene_change_length == 1:
+                print('CUT: ' + str(start_change_frame))
+            else:
+                print('FADE: ' + str(start_change_frame) + ' to '
+                        + str(end_change_frame))
+
+    edges_diff_derivative = np.gradient(edges_diff)
+    # Edge changes - Detect the scene changes
+    for idx, diff in enumerate(edges_diff_derivative, start=1):
+        if idx == 1:
+            # The start of the video will produce a spike on the graph
+            # because the histogram is initialized with black
+            continue
+
+        is_scene_change = False
+        is_scene_change_start = abs(diff) > GRADIENT_SCENE_CHANGE_THRESHOLD \
+                                    and not is_scene_change
+        is_scene_change_end = abs(diff) < GRADIENT_SCENE_CHANGE_THRESHOLD \
+                                and is_scene_change
+
+        if is_scene_change_start:
+            is_scene_change = True
+        if is_scene_change:
+            print('EDGE: ' + str(idx) + ' ' + str(diff))
+        if is_scene_change_end:
+            is_scene_change = False
+
     plt.subplot(2,3,4), plt.plot(edges_diff)
     plt.xlabel('Frame number')
     plt.ylabel('Edge Differences')
-    plt.subplot(2,3,5), plt.plot(np.gradient(edges_diff))
+    plt.subplot(2,3,5), plt.plot(edges_diff_derivative)
     plt.xlabel('Frame number')
     plt.ylabel('Edge Diff Derivative')
     plt.subplot(2,3,6), plt.plot(colour_diff, 'b-', thresh_exceed, 'rx')
