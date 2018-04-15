@@ -98,10 +98,14 @@ def main():
 
             last_edges = dilated
 
-    # Colour changes - Detect the scene changes
+    edges_diff_derivative = np.gradient(edges_diff)
+
     is_scene_change = False
     start_change_frame = 0
     end_change_frame = 0
+    previous_sign = 0
+    # Colour changes - Detect the scene changes
+    print('COLOUR')
     for idx, diff in enumerate(colour_diff, start=1):
         is_scene_change_start = (abs(diff) > COLOUR_SCENE_CHANGE_THRESHOLD) \
                                     and (not is_scene_change)
@@ -111,6 +115,15 @@ def main():
         if is_scene_change_start:
             is_scene_change = True
             start_change_frame = idx
+            # idx-1 in the next line because the ennumeration for
+            # colour_diff starts at 1
+            previous_sign = np.sign(edges_diff_derivative[idx-1])
+            continue
+        elif is_scene_change and (not is_scene_change_end):
+            current_sign = np.sign(edges_diff_derivative[idx-1])
+
+            if current_sign != previous_sign:
+                is_scene_change_end = True
         if is_scene_change_end:
             is_scene_change = False
             end_change_frame = idx
