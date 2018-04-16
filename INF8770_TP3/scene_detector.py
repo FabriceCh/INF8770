@@ -1,14 +1,14 @@
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 COLOUR_DIFF_THRESHOLD = 8000
 GRADIENT_THRESHOLD = 200
 COLOUR_SCENE_CHANGE_THRESHOLD = 8000
 
+
 # Inspiration : https://bcastell.com/posts/scene-detection-tutorial-part-1/
 def main():
-
     video = cv2.VideoCapture("Toots.avi")
 
     if not video.isOpened():
@@ -30,7 +30,7 @@ def main():
     frame = 0
 
     # Kernel defines how thick the dilation is. e.g. (2,2), (4,4)
-    kernel = np.ones((2,2),np.uint8)
+    kernel = np.ones((2, 2), np.uint8)
 
     # Calculate the histograms
     while True:
@@ -38,7 +38,7 @@ def main():
         if not rv:
             break
         frame += 1
-        if len(last_hist) == 0 :
+        if len(last_hist) == 0:
             # First frame
             last_bhist, _ = np.histogram(im[:, :, 0].flatten(), 16, (0, 255))
             last_ghist, _ = np.histogram(im[:, :, 1].flatten(), 16, (0, 255))
@@ -47,9 +47,8 @@ def main():
 
             im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             # Canny is the edge detection thing
-            # I have no idea what the other arguments are but it seems to work
-            # TODO: Figure out what the arguments are
-            edges = cv2.Canny(im_gray, 100, 200)
+            # 75 low threshold, 100 high threshold seems to work pretty well with L2 norm
+            edges = cv2.Canny(im_gray, 75, 100, L2gradient=True)
             # Make edges thicc
             dilated = cv2.dilate(edges, kernel, iterations=1)
             last_edges_img = dilated
@@ -70,15 +69,15 @@ def main():
 
             # EDGES DIFF
             im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-            edges = cv2.Canny(im_gray, 100, 200)
+            edges = cv2.Canny(im_gray, 75, 100, L2gradient=True)
             dilated = cv2.dilate(edges, kernel, iterations=1)
 
             # Add one to all values in the previous image because we
             # don't want to get negative values in the difference image.
-            one = np.ones((last_edges_img.shape[0],last_edges_img.shape[1]),np.uint8)
+            one = np.ones((last_edges_img.shape[0], last_edges_img.shape[1]), np.uint8)
 
             # Divide the images by 255 so that white is represented by 1
-            edges_diff_img = (last_edges_img/255) + one - dilated/255
+            edges_diff_img = (last_edges_img / 255) + one - dilated / 255
 
             edges_diff_values, _ = np.histogram(edges_diff_img.flatten(), 3, (0, 2))
 
@@ -89,11 +88,11 @@ def main():
 
             # Use the code below to print a certain frame in the vid
             if frame == 228:
-                plt.subplot(2,3,1),plt.imshow(last_edges,cmap = 'gray')
+                plt.subplot(2, 3, 1), plt.imshow(last_edges, cmap='gray')
                 plt.title('Last_edges'), plt.xticks([]), plt.yticks([])
-                plt.subplot(2,3,2),plt.imshow(dilated,cmap = 'gray')
+                plt.subplot(2, 3, 2), plt.imshow(dilated, cmap='gray')
                 plt.title('Current_edges'), plt.xticks([]), plt.yticks([])
-                plt.subplot(2,3,3),plt.imshow(last_edges - dilated, cmap = 'gray')
+                plt.subplot(2, 3, 3), plt.imshow(last_edges - dilated, cmap='gray')
                 plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
             last_edges = dilated
@@ -108,22 +107,21 @@ def main():
 
     for idx, diff in enumerate(colour_diff, start=1):
         is_scene_change_start = (abs(diff) > COLOUR_SCENE_CHANGE_THRESHOLD) \
-                                    and (not is_scene_change)
+                                and (not is_scene_change)
         is_scene_change_end = (abs(diff) < COLOUR_SCENE_CHANGE_THRESHOLD) \
-                                and is_scene_change
+                              and is_scene_change
 
         if is_scene_change_start:
             is_scene_change = True
             start_change_frame = idx
             # idx-1 in the next line because the ennumeration for
             # colour_diff starts at 1
-            previous_sign = np.sign(edges_diff_derivative[idx-1])
+            previous_sign = np.sign(edges_diff_derivative[idx - 1])
             continue
         elif is_scene_change and (not is_scene_change_end):
-            current_sign = np.sign(edges_diff_derivative[idx-1])
+            current_sign = np.sign(edges_diff_derivative[idx - 1])
 
-            if (current_sign != previous_sign) \
-                    and (abs(previous_sign) > GRADIENT_THRESHOLD):
+            if current_sign != previous_sign:
                 is_scene_change_end = True
         if is_scene_change_end:
             is_scene_change = False
@@ -134,15 +132,15 @@ def main():
                 print('CUT: ' + str(start_change_frame))
             else:
                 print('FADE: ' + str(start_change_frame) + ' to '
-                        + str(end_change_frame))
+                      + str(end_change_frame))
 
-    plt.subplot(2,3,4), plt.plot(edges_diff)
+    plt.subplot(2, 3, 4), plt.plot(edges_diff)
     plt.xlabel('Frame number')
     plt.ylabel('Edge Differences')
-    plt.subplot(2,3,5), plt.plot(edges_diff_derivative)
+    plt.subplot(2, 3, 5), plt.plot(edges_diff_derivative)
     plt.xlabel('Frame number')
     plt.ylabel('Edge Diff Derivative')
-    plt.subplot(2,3,6), plt.plot(colour_diff, 'b-', thresh_exceed, 'rx')
+    plt.subplot(2, 3, 6), plt.plot(colour_diff, 'b-', thresh_exceed, 'rx')
     plt.xlabel('Frame number')
     plt.ylabel('Colour Difference')
     plt.show()
@@ -152,5 +150,5 @@ def main():
     video.release()
 
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     main()
