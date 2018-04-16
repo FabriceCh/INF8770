@@ -3,9 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 COLOUR_DIFF_THRESHOLD = 8000
-GRADIENT_THRESHOLD = 200
+GRADIENT_SIGN_THRESHOLD = 0.05
 COLOUR_SCENE_CHANGE_THRESHOLD = 8000
-
 
 # Inspiration : https://bcastell.com/posts/scene-detection-tutorial-part-1/
 def main():
@@ -25,12 +24,13 @@ def main():
     last_hist = []
     thresh_exceed = []
     colour_diff = []
-    last_edges = []
-    edges_diff = []
+    edges_enter = []
+    edges_exit = []
+    edges_variation = []
     frame = 0
 
     # Kernel defines how thick the dilation is. e.g. (2,2), (4,4)
-    kernel = np.ones((2, 2), np.uint8)
+    kernel = np.ones((8, 8), np.uint8)
 
     # Calculate the histograms
     while True:
@@ -48,10 +48,12 @@ def main():
             im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             # Canny is the edge detection thing
             # 75 low threshold, 100 high threshold seems to work pretty well with L2 norm
-            edges = cv2.Canny(im_gray, 75, 100, L2gradient=True)
+            gray_mean = im_gray.mean()
+            edges = cv2.Canny(im_gray, gray_mean * 0.5, gray_mean * 1, L2gradient=True)
+            last_edges_img = edges
             # Make edges thicc
             dilated = cv2.dilate(edges, kernel, iterations=1)
-            last_edges_img = dilated
+            last_dilated_img = dilated
         else:
             # COLOUR DIFF
             bhist, _ = np.histogram(im[:, :, 0].flatten(), 16, (0, 255))
@@ -69,33 +71,29 @@ def main():
 
             # EDGES DIFF
             im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-            edges = cv2.Canny(im_gray, 75, 100, L2gradient=True)
+            gray_mean = im_gray.mean()
+            edges = cv2.Canny(im_gray, gray_mean * 0.5, gray_mean * 1, L2gradient=True)
             dilated = cv2.dilate(edges, kernel, iterations=1)
 
-            # Add one to all values in the previous image because we
-            # don't want to get negative values in the difference image.
-            one = np.ones((last_edges_img.shape[0], last_edges_img.shape[1]), np.uint8)
-
-            # Divide the images by 255 so that white is represented by 1
-            edges_diff_img = (last_edges_img / 255) + one - dilated / 255
-
-            edges_diff_values, _ = np.histogram(edges_diff_img.flatten(), 3, (0, 2))
-
-            # Add the number of 0s and 2s because those are the pixels
-            # that were different
-            sum_differences = edges_diff_values[0] + edges_diff_values[2]
-            edges_diff.append(sum_differences)
+            pin = 1 - np.sum(np.multiply(last_dilated_img.flatten() // 255, edges.flatten() // 255)) / np.sum(
+                edges.flatten() // 255)
+            pout = 1 - np.sum(np.multiply(last_edges_img.flatten() // 255, dilated.flatten() // 255)) / np.sum(
+                last_edges_img.flatten() // 255)
+            edges_enter.append(pin)
+            edges_exit.append(pout)
+            edges_variation.append(pin - pout)
 
             # Use the code below to print a certain frame in the vid
             if frame == 228:
-                plt.subplot(2, 3, 1), plt.imshow(last_edges, cmap='gray')
+                plt.subplot(2, 3, 1), plt.imshow(last_edges_img, cmap='gray')
                 plt.title('Last_edges'), plt.xticks([]), plt.yticks([])
                 plt.subplot(2, 3, 2), plt.imshow(dilated, cmap='gray')
                 plt.title('Current_edges'), plt.xticks([]), plt.yticks([])
-                plt.subplot(2, 3, 3), plt.imshow(last_edges - dilated, cmap='gray')
+                plt.subplot(2, 3, 3), plt.imshow(last_edges_img - dilated, cmap='gray')
                 plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-            last_edges = dilated
+            last_edges_img = edges
+            last_dilated_img = dilated
 
     # Detect the scene changes
     is_scene_change = False
@@ -103,9 +101,9 @@ def main():
     end_change_frame = 0
     previous_sign = 0
 
-    edges_diff_derivative = np.gradient(edges_diff)
+    edges_variation_diff = edges_variation
 
-    for idx, diff in enumerate(colour_diff, start=1):
+    for idx, diff in enumerate(colour_diff):
         is_scene_change_start = (abs(diff) > COLOUR_SCENE_CHANGE_THRESHOLD) \
                                 and (not is_scene_change)
         is_scene_change_end = (abs(diff) < COLOUR_SCENE_CHANGE_THRESHOLD) \
@@ -114,32 +112,32 @@ def main():
         if is_scene_change_start:
             is_scene_change = True
             start_change_frame = idx
-            # idx-1 in the next line because the ennumeration for
-            # colour_diff starts at 1
-            previous_sign = np.sign(edges_diff_derivative[idx - 1])
+            previous_sign = np.sign(edges_variation_diff[idx])
             continue
         elif is_scene_change and (not is_scene_change_end):
-            current_sign = np.sign(edges_diff_derivative[idx - 1])
+            current_sign = np.sign(edges_variation_diff[idx])
 
-            if current_sign != previous_sign:
+            if current_sign != previous_sign and (abs(edges_variation_diff[idx]) > GRADIENT_SIGN_THRESHOLD):
                 is_scene_change_end = True
+
         if is_scene_change_end:
             is_scene_change = False
             end_change_frame = idx
 
             scene_change_length = end_change_frame - start_change_frame
             if scene_change_length == 1:
-                print('CUT: ' + str(start_change_frame))
+                # -1 to count the first frame that's not differentiated
+                print('CUT: ' + str(start_change_frame - 1))
             else:
-                print('FADE: ' + str(start_change_frame) + ' to '
-                      + str(end_change_frame))
+                print('FADE: ' + str(start_change_frame - 1) + ' to '
+                      + str(end_change_frame - 1))
 
-    plt.subplot(2, 3, 4), plt.plot(edges_diff)
+    plt.subplot(2, 3, 4), plt.plot(edges_enter, 'g-', edges_exit, 'r-')
     plt.xlabel('Frame number')
     plt.ylabel('Edge Differences')
-    plt.subplot(2, 3, 5), plt.plot(edges_diff_derivative)
+    plt.subplot(2, 3, 5), plt.plot(edges_variation_diff)
     plt.xlabel('Frame number')
-    plt.ylabel('Edge Diff Derivative')
+    plt.ylabel('Edge Diff "Sum"')
     plt.subplot(2, 3, 6), plt.plot(colour_diff, 'b-', thresh_exceed, 'rx')
     plt.xlabel('Frame number')
     plt.ylabel('Colour Difference')

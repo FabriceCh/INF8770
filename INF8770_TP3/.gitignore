@@ -1,4 +1,5 @@
 # Fichiers de PyCharm
+venv*
 .idea/
 
 ############# TEMPLATE #################
