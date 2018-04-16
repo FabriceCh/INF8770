@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 COLOUR_DIFF_THRESHOLD = 8000
-GRADIENT_SCENE_CHANGE_THRESHOLD = 1050
+GRADIENT_THRESHOLD = 200
 COLOUR_SCENE_CHANGE_THRESHOLD = 8000
 
 # Inspiration : https://bcastell.com/posts/scene-detection-tutorial-part-1/
@@ -122,7 +122,8 @@ def main():
         elif is_scene_change and (not is_scene_change_end):
             current_sign = np.sign(edges_diff_derivative[idx-1])
 
-            if current_sign != previous_sign:
+            if (current_sign != previous_sign) \
+                    and (abs(previous_sign) > GRADIENT_THRESHOLD):
                 is_scene_change_end = True
         if is_scene_change_end:
             is_scene_change = False
