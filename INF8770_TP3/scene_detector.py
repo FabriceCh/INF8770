@@ -84,12 +84,12 @@ def main():
             edges_variation.append(pin - pout)
 
             # Use the code below to print a certain frame in the vid
-            if frame == 228:
-                plt.subplot(2, 3, 1), plt.imshow(last_edges_img, cmap='gray')
+            if frame == 1442:
+                plt.subplot(2, 3, 1), plt.imshow(last_edges_img, cmap='gray'), plt.imshow(last_dilated_img, cmap='gray', alpha=0.5)
                 plt.title('Last_edges'), plt.xticks([]), plt.yticks([])
-                plt.subplot(2, 3, 2), plt.imshow(dilated, cmap='gray')
+                plt.subplot(2, 3, 2), plt.imshow(edges, cmap='gray'), plt.imshow(dilated, cmap='gray', alpha=0.5)
                 plt.title('Current_edges'), plt.xticks([]), plt.yticks([])
-                plt.subplot(2, 3, 3), plt.imshow(last_edges_img - dilated, cmap='gray')
+                plt.subplot(2, 3, 3), plt.imshow(last_edges_img - edges, cmap='gray', alpha = 0.5), plt.imshow(last_dilated_img - dilated, cmap='gray', alpha=0.5)
                 plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
             last_edges_img = edges
